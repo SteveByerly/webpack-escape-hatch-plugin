@@ -1,0 +1,30 @@
+{
+  "name": "webpack-escape-hatch-plugin",
+  "version": "1.0.0",
+  "description": "Webpack plugin that provides an exit code if there are compilation errors.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SteveByerly/webpack-escape-hatch-plugin.git"
+  },
+  "keywords": [
+    "webpack",
+    "error",
+    "exit",
+    "plugin",
+    "typescript",
+    "karma"
+  ],
+  "author": "Steve Byerly",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SteveByerly/webpack-escape-hatch-plugin/issues"
+  },
+  "homepage": "https://github.com/SteveByerly/webpack-escape-hatch-plugin#readme",
+  "dependencies": {
+    "chalk": "^2.0.0"
+  }
+}
