@@ -3,42 +3,82 @@
 const chalk = require('chalk');
 
 function WebpackEscapeHatchPlugin(options) {
-  if (!options) {
-    options= {};
+  const DEBUG = 0;
+  const INFO = 1;
+  const WARNING = 2;
+  const ERROR = 3;
+
+  this.LOG_LEVELS = {
+    debug: DEBUG,
+    info: INFO,
+    warning: WARNING,
+    error: ERROR,
+  };
+
+  this.LOG_COLORS = {
+    [WARNING]: chalk.yellow,
+    [ERROR]: chalk.red,
+  };
+
+  this.logLevel = WARNING;
+  this.logger = {
+    error: msg => this.log(msg, ERROR),
+    warning: msg => this.log(msg, WARNING),
+    info: msg => this.log(msg, INFO),
+    debug: msg => this.log(msg, DEBUG),
+  };
+
+  this.parseOptions(options);
+}
+
+WebpackEscapeHatchPlugin.prototype.parseOptions = function (options) {
+  const opts = options || {};
+
+  if (opts.colors == null) {
+    opts.colors = true;
   }
 
-  if (options.colors == null) {
-    options.colors = true;
-  }
-
-  options.exitWatch = options.exitWatch || false;
-  options.verbose = options.verbose || false;
-  this.options = options;
-
-  chalk.enabled = options.colors === true;
+  opts.exitWatch = opts.exitWatch || false;
+  opts.logLevel = opts.logLevel || 'error';
+  chalk.enabled = opts.colors === true;
+  this.logLevel = this.LOG_LEVELS[opts.logLevel] || this.WARNING;
+  this.options = opts;
 };
 
-WebpackEscapeHatchPlugin.prototype.apply = function(compiler) {
-  const options = this.options;
+WebpackEscapeHatchPlugin.prototype.log = function (msg, level) {
+  if (level >= this.logLevel) {
+    const color = this.LOG_COLORS[level] || chalk.reset;
+    // eslint-disable-next-line no-console
+    console.log(color(`[WebpackEscapeHatchPlugin] ${msg}`));
+  }
+};
 
-  compiler.plugin('done', function(stats) {
-    if (stats.compilation.warnings.length > 0 && this.options.verbose) {
-      console.warn(chalk.yellow(`[WebpackEscapeHatchPlugin] Warnings found during compilation:`));
+WebpackEscapeHatchPlugin.prototype.apply = function (compiler) {
+  let isWatching = false;
+
+  compiler.plugin('watch-run', (watching, callback) => {
+    isWatching = true;
+    callback();
+  });
+
+  compiler.plugin('done', (stats) => {
+    if (stats.compilation.warnings.length > 0) {
+      this.logger.warn('Warnings found during compilation:');
       stats.compilation.warnings.forEach((warning) => {
-        const msg = warning.message || warning;
-        console.warn(chalk.yellow(`    ${msg}`));
+        this.logger.warn(`${warning.message || warning}`);
       });
     }
 
     if (stats.compilation.errors.length > 0) {
-      console.error(chalk.red(`[WebpackEscapeHatchPlugin] Errors found during compilation:`));
+      this.logger.error('Errors found during compilation:');
       stats.compilation.errors.forEach((error) => {
-        const msg = error.message || error;
-        console.error(chalk.red(`    ${msg}`));
+        this.logger.error(`${error.message || error}`);
       });
 
-      if (!this.options.watch || options.exitWatch) {
-        console.error(chalk.red(`[WebpackEscapeHatchPlugin] Exiting the process`));
+      isWatching = isWatching || compiler.options.watch;
+
+      if (!isWatching || this.options.exitWatch) {
+        this.logger.error('Exiting the process');
         process.exit(1);
       }
     }
