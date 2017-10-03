@@ -1,6 +1,6 @@
 {
   "name": "webpack-escape-hatch-plugin",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Webpack plugin that provides an exit code if there are compilation errors.",
   "main": "index.js",
   "scripts": {
