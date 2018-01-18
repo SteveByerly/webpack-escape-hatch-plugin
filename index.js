@@ -65,14 +65,14 @@ WebpackEscapeHatchPlugin.prototype.apply = function (compiler) {
     if (stats.compilation.warnings.length > 0) {
       this.logger.warning('Warnings found during compilation:');
       stats.compilation.warnings.forEach((warning) => {
-        this.logger.warning(`${warning.message || warning}`);
+        this.logger.warning(`WARNING in ${warning.file}\n ${warning.message}`);
       });
     }
 
     if (stats.compilation.errors.length > 0) {
       this.logger.error('Errors found during compilation:');
       stats.compilation.errors.forEach((error) => {
-        this.logger.error(`${error.message || error}`);
+        this.logger.error(`ERROR in ${error.file}\n ${error.message}`);
       });
 
       isWatching = isWatching || compiler.options.watch;
